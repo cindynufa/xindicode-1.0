@@ -2889,91 +2889,71 @@
         document.querySelectorAll('section[id]').forEach((s) => sio.observe(s));
 
         // ── Contact form
-        const form = document.getElementById('contactForm');
-        if (form) {
-          form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            const txt = document.getElementById('btnText');
-            const load = document.getElementById('btnLoading');
+const form = document.getElementById('contactForm');
+if (form) {
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    const txt = document.getElementById('btnText');
+    const load = document.getElementById('btnLoading');
 
-            txt.classList.add('hidden');
-            load.classList.remove('hidden');
-            btn.disabled = true;
+    txt.classList.add('hidden');
+    load.classList.remove('hidden');
+    btn.disabled = true;
 
-            // Ambil nilai form
-            const nama =
-              form.querySelector('[name="nama"]')?.value?.trim() || '';
-            const wa =
-              form.querySelector('[name="whatsapp"]')?.value?.trim() || '';
-            const email =
-              form.querySelector('[name="email"]')?.value?.trim() || '';
-            const layanan =
-              form.querySelector('[name="layanan"]')?.value || '-';
-            const pesan =
-              form.querySelector('[name="pesan"]')?.value?.trim() || '';
+    const nama    = form.querySelector('[name="nama"]')?.value?.trim() || '';
+    const wa      = form.querySelector('[name="whatsapp"]')?.value?.trim() || '';
+    const email   = form.querySelector('[name="email"]')?.value?.trim() || '';
+    const layanan = form.querySelector('[name="layanan"]')?.value || '-';
+    const pesan   = form.querySelector('[name="pesan"]')?.value?.trim() || '';
 
-            // ── 1. Kirim email via FormSubmit
-            let emailSent = false;
-            try {
-              const res = await fetch(
-                'https://formsubmit.co/ajax/inbox@xindi.codes',
-                {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                  },
-                  body: JSON.stringify({
-                    _subject: '[xindicodes] Permintaan Proyek Baru',
-                    _template: 'table',
-                    _captcha: 'false',
-                    nama,
-                    whatsapp: wa,
-                    email,
-                    layanan,
-                    pesan,
-                  }),
-                },
-              );
-              const data = await res.json();
-              emailSent = data.success === 'true' || data.success === true;
-            } catch (_) {
-              emailSent = false;
-            }
+    // ── 1. Buka WA DULU sebelum fetch — masih dalam konteks user action
+    const waText =
+      `Halo xindicodes! Saya ingin konsultasi proyek website.\n\n` +
+      `Nama     : ${nama}\n` +
+      `WhatsApp : ${wa}\n` +
+      `Email    : ${email}\n` +
+      `Layanan  : ${layanan}\n` +
+      `Pesan    :\n${pesan}`;
 
-            // ── 2. Tampilkan success state
-            form.innerHTML = `
-              <div class="text-center py-10">
-                <div class="w-14 h-14 rounded-full bg-success-lt text-success flex items-center justify-center mx-auto mb-4">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path d="M20 6 9 17l-5-5"/>
-                  </svg>
-                </div>
-                <h3 class="text-xl font-bold text-ink-900 mb-2">Pesan Terkirim!</h3>
-                <p class="text-sm text-ink-400 leading-relaxed">
-                  Kami akan segera menghubungi kamu dalam <strong>24 jam</strong>.<br/>
-                  Jendela WhatsApp akan terbuka sebentar lagi...
-                </p>
-              </div>`;
+    window.open(
+      `https://wa.me/6285640201000?text=${encodeURIComponent(waText)}`,
+      '_blank'
+    );
 
-            // ── 3. Buka WhatsApp
-            const waText =
-              `Halo xindicodes! Saya ingin konsultasi proyek website.\n\n` +
-              `Nama     : ${nama}\n` +
-              `WhatsApp : ${wa}\n` +
-              `Email    : ${email}\n` +
-              `Layanan  : ${layanan}\n` +
-              `Pesan    :\n${pesan}`;
+    // ── 2. Kirim email via FormSubmit (background)
+    try {
+      await fetch('https://formsubmit.co/ajax/inbox@xindi.codes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          _subject : '[xindicodes] Permintaan Proyek Baru',
+          _template: 'table',
+          _captcha : 'false',
+          nama, whatsapp: wa, email, layanan, pesan
+        })
+      });
+    } catch (_) {}
 
-            setTimeout(() => {
-              window.open(
-                `https://wa.me/6285640201000?text=${encodeURIComponent(waText)}`,
-                '_blank',
-              );
-            }, 1200);
-          });
-        }
+    // ── 3. Tampilkan success state
+    form.innerHTML = `
+      <div class="text-center py-10">
+        <div class="w-14 h-14 rounded-full bg-success-lt text-success flex items-center justify-center mx-auto mb-4">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M20 6 9 17l-5-5"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-bold text-ink-900 mb-2">Pesan Terkirim!</h3>
+        <p class="text-sm text-ink-400 leading-relaxed">
+          Kami akan segera menghubungi kamu <br>dalam <strong>24 jam</strong>.<br/>
+          Cek WhatsApp kamu untuk melanjutkan konsultasi.
+        </p>
+      </div>`;
+  });
+}
 
         // ── Testimonial slider
         const track = document.getElementById('testiTrack');
